@@ -203,16 +203,13 @@ handles.reconImage1 = handles.RealImage1 .* exp(j*handles.phaseImage2);
 handles.I_recon1 =ifft2(handles.reconImage1);
 axes(handles.axes3);
 imshow(handles.I_recon1);
-handles.khalas=false;
 end
 if handles.magnitude2 && handles.phase1
 handles.reconImage2 = handles.RealImage2 .* exp(j*handles.phaseImage1);
 handles.I_recon2 =ifft2(handles.reconImage2);
 axes(handles.axes5);
 imshow(handles.I_recon2);
-handles.khalas2=false;
 end
-set(handles.generatebutton2,'Enable','on');
 
 
 
@@ -271,7 +268,7 @@ handles.I_recon1 =ifft2(handles.reconImage1);
 axes(handles.axes3);
 imshow(handles.I_recon1);
 end
-if handles.magnitude2 && handles.phase1&&handles.khalas2
+if handles.magnitude2 && handles.phase1&&handles.khalas
 handles.reconImage2 = handles.RealImage2 .* exp(j*handles.phaseImage1);
 handles.I_recon2 =ifft2(handles.reconImage2);
 axes(handles.axes5);
