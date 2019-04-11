@@ -22,7 +22,7 @@ function varargout = Twaisek(varargin)
 
 % Edit the above text to modify the response to help Twaisek
 
-% Last Modified by GUIDE v2.5 26-Mar-2019 20:31:46
+% Last Modified by GUIDE v2.5 27-Mar-2019 11:47:40
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -54,12 +54,11 @@ function Twaisek_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % Choose default command line output for Twaisek
 handles.output = hObject;
-handles.magnitude1=false;
-handles.magnitude2=false;
-handles.phase1=false;
-handles.phase2=false;
-handles.khalas=true;
-handles.khalas2=true;
+handles.magnitude1Value=0;
+handles.valuephase1=0;
+handles.magnitude2Value=0;
+handles.valuephase2=0;
+
 set(handles.generatebutton2,'Enable','off');
 
 % Update handles structure
@@ -90,9 +89,6 @@ function slider1_Callback(hObject, eventdata, handles)
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 
 handles.magnitude1Value = get(hObject,'Value');
-if handles.magnitude1Value>0
-    handles.magnitude1=true;
-end
 
 guidata(hObject,handles);
 
@@ -116,10 +112,7 @@ function slider2_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
-handles.phase1Value = get(hObject,'Value');
-if handles.phase1Value>0
-    handles.phase1=true;
-end
+handles.valuephase1 = get(hObject,'Value');
 
 guidata(hObject,handles);
 
@@ -146,11 +139,6 @@ function slider3_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 handles.magnitude2Value = get(hObject,'Value');
-if handles.magnitude2Value>0
-    handles.magnitude2=true;
-end
-
-
 guidata(hObject,handles);
 
 % --- Executes during object creation, after setting all properties.
@@ -173,11 +161,8 @@ function slider4_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
-handles.phase2Value = get(hObject,'Value');
+handles.valuephase2 = get(hObject,'Value');
 
-if handles.phase2Value>0
-    handles.phase2=true;
-end
 guidata(hObject,handles);
 
 
@@ -198,21 +183,15 @@ function generatebutton_Callback(hObject, eventdata, handles)
 % hObject    handle to generatebutton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-if handles.magnitude1 && handles.phase2
-handles.reconImage1 = handles.RealImage1 .* exp(j*handles.phaseImage2);
+%if handles.magnitude1 && handles.phase2
+handles.phase2per= handles.valuephase2 .* handles.phaseImage2 + handles.valuephase1 .* handles.phaseImage1;
+handles.magnitude1per=handles.magnitude1Value .* handles.RealImage1+handles.magnitude2Value.*handles.RealImage2;
+handles.reconImage1 =  handles.magnitude1per .* exp(j*handles.phase2per);
 handles.I_recon1 =ifft2(handles.reconImage1);
 axes(handles.axes3);
 imshow(handles.I_recon1);
-handles.khalas=false;
-end
-if handles.magnitude2 && handles.phase1
-handles.reconImage2 = handles.RealImage2 .* exp(j*handles.phaseImage1);
-handles.I_recon2 =ifft2(handles.reconImage2);
-axes(handles.axes5);
-imshow(handles.I_recon2);
-handles.khalas2=false;
-end
 set(handles.generatebutton2,'Enable','on');
+guidata(hObject,handles);
 
 
 
@@ -227,16 +206,25 @@ if ( handles.file1 ~= 0)
 end
 handles.resizedImage= imresize(handles.image1, [256 256]);
 handles.arrayImage= im2double(handles.resizedImage);
-%handles.grayimage= rgb2gray(handles.arrayImage); 
- axes(handles.axes1);
- imshow(handles.arrayImage);
-handles.image_fourier = fft2(handles.arrayImage);
+[rows columns numberOfColorChannels1] = size(handles.arrayImage);
+if numberOfColorChannels1>1
+handles.grayimage= rgb2gray(handles.arrayImage); 
+axes(handles.axes1);
+imshow(handles.grayimage);
+handles.RealImagee=abs(handles.grayimage);
+axes(handles.axes10);
+imshow(handles.RealImagee);
+handles.phaseImagee=angle(handles.grayimage);
+axes(handles.axes11);
+imshow(handles.phaseImagee);
+handles.image_fourier = fft2(handles.grayimage);
 handles.RealImage1=abs(handles.image_fourier);
 handles.phaseImage1=angle(handles.image_fourier);
+end
 
 
 guidata(hObject,handles);
-
+ 
 % --- Executes on button press in browse2.
 function browse2_Callback(hObject, eventdata, handles)
 % hObject    handle to browse2 (see GCBO)
@@ -249,13 +237,22 @@ if ( handles.file2 ~= 0)
 end
 handles.resizedImage2= imresize(handles.image2, [256 256]);
 handles.arrayImage2= im2double(handles.resizedImage2);
+[rows columns numberOfColorChannels1] = size(handles.arrayImage2);
+if numberOfColorChannels1>1
+handles.colored=true;
 handles.grayimage2= rgb2gray(handles.arrayImage2); 
- axes(handles.axes2);
- imshow(handles.grayimage2);
+axes(handles.axes2);
+imshow(handles.grayimage2);
+handles.RealImagee2=abs(handles.grayimage2);
+axes(handles.axes12);
+imshow(handles.RealImagee2);
+handles.phaseImagee2=angle(handles.grayimage2);
+axes(handles.axes13);
+imshow(handles.phaseImagee2);
 handles.image_fourier2 = fft2(handles.grayimage2);
 handles.RealImage2=abs(handles.image_fourier2);
 handles.phaseImage2=angle(handles.image_fourier2);
-
+end
 
 guidata(hObject,handles);
 
@@ -265,15 +262,11 @@ function generatebutton2_Callback(hObject, eventdata, handles)
 % hObject    handle to generatebutton2 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-if handles.magnitude1 && handles.phase2&&handles.khalas
-handles.reconImage1 = handles.RealImage1 .* exp(j*handles.phaseImage2);
+%if handles.magnitude1 && handles.phase2&&handles
+
+ handles.phase2per= handles.valuephase2 .* handles.phaseImage2 + handles.valuephase1 .* handles.phaseImage1;
+handles.magnitude1per=handles.magnitude1Value .* handles.RealImage1+handles.magnitude2Value.*handles.RealImage2;
+handles.reconImage1 =  handles.magnitude1per .* exp(j*handles.phase2per);
 handles.I_recon1 =ifft2(handles.reconImage1);
-axes(handles.axes3);
-imshow(handles.I_recon1);
-end
-if handles.magnitude2 && handles.phase1&&handles.khalas2
-handles.reconImage2 = handles.RealImage2 .* exp(j*handles.phaseImage1);
-handles.I_recon2 =ifft2(handles.reconImage2);
 axes(handles.axes5);
-imshow(handles.I_recon2);
-end
+imshow(handles.I_recon1);

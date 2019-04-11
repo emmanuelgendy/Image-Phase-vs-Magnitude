@@ -25,7 +25,7 @@ I_recon =ifft2(I_fft_recon);
 imshow(I_recon,[]);
 figure
 % read tane image
-I2= im2double(imread('cam.png'));
+I2= im2double(imread('jack.jpeg'));
 %ngeb el phase wl mag bto3ha
 image_fourier_2 = fft2(I2);
 Real_2=abs(image_fourier_2);
